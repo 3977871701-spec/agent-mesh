@@ -1,0 +1,218 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1EFBCB92D1E96E8768D14CA1 /* ConsoleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5248BDF3966A3B8F5E3C2319 /* ConsoleViewController.swift */; };
+		2A0890DFE68269E2712ED86E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AF232C6726A7715446AAC863 /* Assets.xcassets */; };
+		E1E158C9956F23991D9C660D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1AE54249C4490C996C5CE10 /* AppDelegate.swift */; };
+		F7E26350F8C78A053BF66087 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5A4E26BFBFA682EF0A80B12 /* main.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		408C32EE24DCAEE9E1CBA498 /* AgentMeshConsole.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AgentMeshConsole.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5248BDF3966A3B8F5E3C2319 /* ConsoleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleViewController.swift; sourceTree = "<group>"; };
+		82B56D8807CB011450D05720 /* AgentMeshConsole.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AgentMeshConsole.entitlements; sourceTree = "<group>"; };
+		99D21B415D41F58F3C95C907 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		AF232C6726A7715446AAC863 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D1AE54249C4490C996C5CE10 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		F5A4E26BFBFA682EF0A80B12 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		32DE7B0EACC2B298E85AC4AB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				408C32EE24DCAEE9E1CBA498 /* AgentMeshConsole.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6B866D02666BE5EAC7B4DEBD /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				82B56D8807CB011450D05720 /* AgentMeshConsole.entitlements */,
+				AF232C6726A7715446AAC863 /* Assets.xcassets */,
+				99D21B415D41F58F3C95C907 /* Info.plist */,
+			);
+			name = Resources;
+			path = AgentMeshConsole/Resources;
+			sourceTree = "<group>";
+		};
+		6CFE94710542121BD08CF8B7 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				D1AE54249C4490C996C5CE10 /* AppDelegate.swift */,
+				5248BDF3966A3B8F5E3C2319 /* ConsoleViewController.swift */,
+				F5A4E26BFBFA682EF0A80B12 /* main.swift */,
+			);
+			name = Sources;
+			path = AgentMeshConsole/Sources;
+			sourceTree = "<group>";
+		};
+		DEA2AB293EDF95C0A6D2E4E5 = {
+			isa = PBXGroup;
+			children = (
+				6B866D02666BE5EAC7B4DEBD /* Resources */,
+				6CFE94710542121BD08CF8B7 /* Sources */,
+				32DE7B0EACC2B298E85AC4AB /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F871F3CD591E46483978EDA0 /* AgentMeshConsole */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CC19ADF5C563A7B2D231213D /* Build configuration list for PBXNativeTarget "AgentMeshConsole" */;
+			buildPhases = (
+				20DB10D7FF9B4699EE87E12A /* Sources */,
+				36375D2C5A9A72843AF989D9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AgentMeshConsole;
+			productName = AgentMeshConsole;
+			productReference = 408C32EE24DCAEE9E1CBA498 /* AgentMeshConsole.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A550769A7EFCF59B9D7925BD /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					F871F3CD591E46483978EDA0 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = B1DC12F344EBCDB74986DC36 /* Build configuration list for PBXProject "AgentMeshConsole" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = DEA2AB293EDF95C0A6D2E4E5;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F871F3CD591E46483978EDA0 /* AgentMeshConsole */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		36375D2C5A9A72843AF989D9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A0890DFE68269E2712ED86E /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		20DB10D7FF9B4699EE87E12A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E1E158C9956F23991D9C660D /* AppDelegate.swift in Sources */,
+				1EFBCB92D1E96E8768D14CA1 /* ConsoleViewController.swift in Sources */,
+				F7E26350F8C78A053BF66087 /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		09C57FF1D4BD27E45C2FC891 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		7F716E9A67E7893012E26ABC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = AgentMeshConsole/Resources/AgentMeshConsole.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = AgentMeshConsole/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.agentmesh.console;
+				PRODUCT_NAME = "Agent Mesh Console";
+			};
+			name = Debug;
+		};
+		8153B0895BDFB67C39572263 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		91BBB9EAA139B78DB6FFE39A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = AgentMeshConsole/Resources/AgentMeshConsole.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = AgentMeshConsole/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.agentmesh.console;
+				PRODUCT_NAME = "Agent Mesh Console";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B1DC12F344EBCDB74986DC36 /* Build configuration list for PBXProject "AgentMeshConsole" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8153B0895BDFB67C39572263 /* Debug */,
+				09C57FF1D4BD27E45C2FC891 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CC19ADF5C563A7B2D231213D /* Build configuration list for PBXNativeTarget "AgentMeshConsole" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7F716E9A67E7893012E26ABC /* Debug */,
+				91BBB9EAA139B78DB6FFE39A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A550769A7EFCF59B9D7925BD /* Project object */;
+}

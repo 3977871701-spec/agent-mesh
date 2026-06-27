@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.schematic-canvas {
+  background-color: #1a1a2e;
+  background-image:
+    linear-gradient(rgba(42, 42, 74, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42, 42, 74, 0.3) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.component-symbol {
+  stroke: #00ff88;
+  stroke-width: 2;
+  fill: transparent;
+}
+
+.wire {
+  stroke: #00ff88;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.pin {
+  fill: #e94560;
+}
+
+.pin-label {
+  fill: #ffffff;
+  font-size: 10px;
+  font-family: monospace;
+}
+
+.net-label {
+  fill: #ffcc00;
+  font-size: 11px;
+  font-weight: bold;
+}

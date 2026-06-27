@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Mesh - 管理控制台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5568d3;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-muted: #6c757d;
+            --border: #e9ecef;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 15px rgba(102, 126, 234, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 20px; }
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.15);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+        .connection-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #ccc;
+            transition: background 0.3s;
+        }
+        .connection-dot.connected { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+        .connection-dot.disconnected { background: #f87171; }
+
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+
+        /* Left Sidebar - Agent List */
+        .sidebar {
+            width: 220px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sidebar-header button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: var(--primary);
+        }
+        .agent-list {
+            flex: 1;
+            overflow-y: auto;
+            list-style: none;
+        }
+        .agent-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-size: 13px;
+        }
+        .agent-item:hover { background: #f8f9fa; }
+        .agent-item.active { background: #eef2ff; border-left: 3px solid var(--primary); }
+        .agent-avatar {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: bold; font-size: 11px;
+            flex-shrink: 0;
+        }
+        .agent-info { flex: 1; min-width: 0; }
+        .agent-name { font-weight: 500; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .agent-meta { font-size: 10px; color: var(--text-muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; }
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .status-dot.online { background: #4ade80; }
+        .status-dot.offline { background: #d1d5db; }
+        .status-dot.launching {
+            background: #fbbf24;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Chat Panel */
+        .chat-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+        }
+        .chat-header {
+            padding: 15px 20px;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .chat-header-info { flex: 1; }
+        .chat-header-name { font-weight: 600; font-size: 16px; }
+        .chat-header-status { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .chat-header-status.online { color: #22c55e; }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .chat-empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+        }
+        .chat-empty-state svg { width: 64px; height: 64px; margin-bottom: 15px; opacity: 0.3; }
+        .message {
+            max-width: 80%;
+            padding: 8px 14px;
+            border-radius: 16px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .message.sent {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .message.received {
+            align-self: flex-start;
+            background: white;
+            color: var(--text);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .message-time {
+            font-size: 10px;
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+        .message.sent .message-time { text-align: right; }
+        .message.received .message-time { text-align: left; }
+
+        .chat-input-area {
+            padding: 10px 15px;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .chat-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .chat-input:focus { border-color: var(--primary); }
+        .chat-send-btn {
+            width: 36px; height: 36px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .chat-send-btn:hover { background: var(--primary-dark); }
+        .chat-send-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Systems Status Bar - Compact */
+        #systems-bar {
+            display: flex;
+            gap: 10px;
+            padding: 6px 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid var(--border);
+            font-size: 11px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .toggle-systems-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .toggle-systems-btn:hover {
+            background: rgba(0,0,0,0.05);
+        }
+        .toggle-systems-btn.hidden::after {
+            content: " ▶";
+        }
+        .toggle-systems-btn::after {
+            content: " ▲";
+        }
+        #systems-status {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            transition: all 0.3s ease;
+        }
+        #systems-status.collapsed {
+            display: none;
+        }
+        .systems-refresh {
+            margin-left: auto;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--primary);
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .systems-refresh:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        /* Quick actions */
+        .quick-actions {
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            font-size: 13px;
+        }
+        .quick-actions button {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .quick-actions button:hover { text-decoration: underline; }
+
+        /* Modal */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: white; border-radius: 12px; width: 90%; max-width: 400px;
+        }
+        .modal-header {
+            padding: 15px 20px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-header h3 { margin: 0; font-size: 16px; }
+        .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted); }
+        .modal-body { padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 13px; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;
+        }
+        .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+        .btn {
+            padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer;
+            font-size: 13px; font-weight: 500;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            padding: 12px 24px; background: #333; color: white; border-radius: 8px;
+            z-index: 2000; display: none; font-size: 14px;
+        }
+        .toast.show { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .typing-indicator.show { display: flex; gap: 4px; }
+        .typing-dot {
+            width: 6px; height: 6px; background: var(--text-muted); border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
+        }
+
+        /* Launcher */
+        .launcher-section {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid var(--border);
+        }
+        .launcher-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .launcher-title {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text);
+        }
+        .launcher-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .launcher-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .launcher-btn.start-all {
+            background: var(--success);
+            color: white;
+        }
+        .launcher-btn.start-all:hover { background: #218838; }
+        .launcher-btn.stop-all {
+            background: var(--danger);
+            color: white;
+        }
+        .launcher-btn.stop-all:hover { background: #c82333; }
+        .launcher-btn.start-single {
+            background: var(--primary);
+            color: white;
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+        .launcher-btn.start-single:hover { background: var(--primary-dark); }
+        .agent-with-launch {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .agent-launch-btn {
+            opacity: 0;
+            transition: opacity 0.2s;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+        .agent-item:hover .agent-launch-btn { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Agent Mesh 控制台</h1>
+        <div class="connection-status">
+            <div class="connection-dot" id="ws-status"></div>
+            <span id="ws-status-text">连接中...</span>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <span>Agent 列表</span>
+                <button onclick="showAddAgentModal()" title="添加Agent">+</button>
+            </div>
+            <div class="quick-actions">
+                <button onclick="loadAgents()">↻ 刷新</button>
+                <button onclick="confirmAllAgents()">全部确认</button>
+            </div>
+            <div class="launcher-section">
+                <div class="launcher-header">
+                    <span class="launcher-title">Agent 启动器</span>
+                </div>
+                <div class="launcher-actions">
+                    <button class="launcher-btn start-all" onclick="startAllAgents()">▶ 全部启动</button>
+                    <button class="launcher-btn stop-all" onclick="stopAllAgents()">■ 全部停止</button>
+                </div>
+            </div>
+            <ul class="agent-list" id="agents-list">
+                <li style="padding: 20px; text-align: center; color: var(--text-muted);">加载中...</li>
+            </ul>
+        </div>
+
+        <!-- Systems Status Bar (Compact with Toggle) -->
+        <div id="systems-bar">
+            <button class="toggle-systems-btn" id="toggle-systems-btn" onclick="toggleSystemsBar()" title="点击隐藏/显示系统状态"></button>
+            <div id="systems-status"></div>
+            <button class="systems-refresh" onclick="loadSystems()" title="刷新状态">↻</button>
+        </div>
+
+        <!-- Chat Panel -->
+        <div class="chat-panel" id="chat-panel">
+            <div class="chat-empty-state" id="chat-empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <div>点击左侧 Agent 开始对话</div>
+            </div>
+
+            <div id="chat-content" style="display: none; flex-direction: column; height: 100%;">
+                <div class="chat-header">
+                    <div class="agent-avatar" id="chat-avatar" style="width: 40px; height: 40px; font-size: 16px;"></div>
+                    <div class="chat-header-info">
+                        <div class="chat-header-name" id="chat-name">-</div>
+                        <div class="chat-header-status" id="chat-status">-</div>
+                    </div>
+                    <button onclick="clearChatHistory()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px;">清除记录</button>
+                </div>
+                <div class="chat-messages" id="chat-messages"></div>
+                <div class="typing-indicator" id="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" class="chat-input" id="chat-input" placeholder="输入消息... (Enter 发送)" onkeypress="if(event.key==='Enter')sendMessage()">
+                    <button class="chat-send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Agent Modal -->
+    <div class="modal" id="add-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加新 Agent</h3>
+                <button class="modal-close" onclick="closeModal('add-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Agent ID</label>
+                    <input type="text" id="agent-id" placeholder="例如: my-agent">
+                </div>
+                <div class="form-group">
+                    <label>名称</label>
+                    <input type="text" id="agent-name" placeholder="例如: My Agent">
+                </div>
+                <div class="form-group">
+                    <label>类型</label>
+                    <select id="agent-type">
+                        <option value="custom">自定义</option>
+                        <option value="hermes">Hermes</option>
+                        <option value="openclaw">OpenClaw</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('add-modal')">取消</button>
+                <button class="btn btn-primary" onclick="addAgent()">添加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const API_BASE = '/api';
+        let ws = null;
+        let agents = [];
+        let currentAgent = null;
+        let conversations = {};
+        let wsConnected = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            connectWebSocket();
+            loadAgents();
+            loadSystems();
+            setInterval(loadAgents, 10000);
+            setInterval(loadSystems, 30000);
+        });
+
+        // Load Systems Status
+        async function loadSystems() {
+            try {
+                const resp = await fetch(`${API_BASE}/systems`);
+                const data = await resp.json();
+                renderSystemsStatus(data.systems || []);
+            } catch (e) {
+                console.error('Load systems error:', e);
+            }
+        }
+
+        let systemsBarVisible = true;
+        function toggleSystemsBar() {
+            const statusDiv = document.getElementById('systems-status');
+            const btn = document.getElementById('toggle-systems-btn');
+            systemsBarVisible = !systemsBarVisible;
+            if (systemsBarVisible) {
+                statusDiv.classList.remove('collapsed');
+                btn.classList.remove('hidden');
+            } else {
+                statusDiv.classList.add('collapsed');
+                btn.classList.add('hidden');
+            }
+        }
+
+        function renderSystemsStatus(systems) {
+            const container = document.getElementById('systems-status');
+            if (!systems || systems.length === 0) {
+                container.innerHTML = '<span style="color: var(--text-muted);">暂无系统</span>';
+                return;
+            }
+            container.innerHTML = systems.map(sys => {
+                const color = sys.status === 'running' ? '#22c55e' : sys.status === 'stopped' ? '#ef4444' : sys.status === 'installed' ? '#3b82f6' : '#9ca3af';
+                const dot = sys.status === 'running' ? '●' : sys.status === 'stopped' ? '○' : sys.status === 'installed' ? '◆' : '?';
+                return `<span style="color: ${color}; cursor: default;" title="${sys.type || ''}">${dot} ${sys.name}</span>`;
+            }).join(' ');
+        }
+
+        // WebSocket Connection
+        function connectWebSocket() {
+            const wsUrl = `ws://${location.hostname}:18800`;
+            const statusDot = document.getElementById('ws-status');
+            const statusText = document.getElementById('ws-status-text');
+
+            try {
+                ws = new WebSocket(wsUrl);
+
+                ws.onopen = () => {
+                    wsConnected = true;
+                    statusDot.className = 'connection-dot connected';
+                    statusText.textContent = '已连接';
+                    ws.send(JSON.stringify({
+                        type: 'register',
+                        payload: { id: 'console', name: 'Console', type: 'console' }
+                    }));
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        handleMessage(data);
+                    } catch (e) { console.error('Parse error:', e); }
+                };
+
+                ws.onclose = () => {
+                    wsConnected = false;
+                    statusDot.className = 'connection-dot disconnected';
+                    statusText.textContent = '已断开';
+                    setTimeout(connectWebSocket, 5000);
+                };
+
+                ws.onerror = () => {
+                    statusDot.className = 'connection-dot disconnected';
+                    statusText.textContent = '连接错误';
+                };
+            } catch (e) {
+                setTimeout(connectWebSocket, 5000);
+            }
+        }
+
+        function handleMessage(data) {
+            const type = data.type;
+
+            if (type === 'message') {
+                const from = data.from || 'unknown';
+                const text = data.payload?.text || '';
+                const timestamp = data.timestamp || new Date().toISOString();
+
+                // Add to conversation
+                if (!conversations[from]) conversations[from] = [];
+                conversations[from].push({ from, text, timestamp, sent: false });
+
+                // Update UI if chatting with this agent
+                if (currentAgent && from === currentAgent.id) {
+                    renderMessages();
+                }
+
+                // Update agent list indicator
+                updateAgentUnread(from);
+
+            } else if (type === 'status_change') {
+                const agentId = data.payload?.agent_id;
+                const status = data.payload?.status;
+                updateAgentStatus(agentId, status);
+            }
+        }
+
+        function updateAgentStatus(agentId, status) {
+            const agent = agents.find(a => a.id === agentId);
+            if (agent) {
+                agent.status = status;
+                renderAgentsList();
+                if (currentAgent && currentAgent.id === agentId) {
+                    const statusEl = document.getElementById('chat-status');
+                    statusEl.textContent = status === 'online' ? '● 在线' : '○ 离线';
+                    statusEl.className = 'chat-header-status' + (status === 'online' ? ' online' : '');
+                }
+            }
+        }
+
+        function updateAgentUnread(agentId) {
+            // Could add unread badge here
+        }
+
+        // Load Agents
+        async function loadAgents() {
+            try {
+                const resp = await fetch(`${API_BASE}/agents`);
+                const data = await resp.json();
+                agents = data.agents || [];
+                renderAgentsList();
+            } catch (e) { console.error('Load agents error:', e); }
+        }
+
+        function renderAgentsList() {
+            const container = document.getElementById('agents-list');
+            if (!agents.length) {
+                container.innerHTML = '<li style="padding: 20px; text-align: center; color: var(--text-muted);">暂无 Agent</li>';
+                return;
+            }
+            container.innerHTML = agents.map(agent => {
+                const typeIcon = getAgentTypeIcon(agent.type);
+                return `
+                <li class="agent-item ${currentAgent && agent.id === currentAgent.id ? 'active' : ''}"
+                    onclick="selectAgent('${agent.id}')">
+                    <div class="agent-info" style="flex: 1;">
+                        <div class="agent-name">${escapeHtml(agent.name || agent.id)}</div>
+                        <div class="agent-meta">${typeIcon} ${agent.type} · ${agent.id}</div>
+                    </div>
+                    <button class="agent-launch-btn" onclick="event.stopPropagation(); startAgent('${agent.id}', '${agent.type}')" title="启动终端">▶</button>
+                    <div class="status-dot ${getStatusClass(agent)}"></div>
+                </li>
+            `}).join('');
+        }
+
+        function getAgentTypeIcon(type) {
+            const icons = {
+                'openclaw': '🦞',
+                'hermes': '🧠',
+                'codex': '⚡',
+                'claude': '🧊',
+                'phoenix': '🔥',
+                'console': '💻',
+                'custom': '🤖'
+            };
+            return icons[type] || '🤖';
+        }
+
+        function getStatusClass(agent) {
+            // Check if agent is being launched (has launch timestamp in recent past)
+            if (agent.launching) return 'launching';
+            if (agent.status === 'online') return 'online';
+            if (agent.status === 'offline') return 'offline';
+            return 'offline';
+        }
+
+        async function startAgent(agentId, agentType) {
+            showToast(`正在启动 ${agentId}...`, 'info');
+
+            // Set launching state
+            const agent = agents.find(a => a.id === agentId);
+            if (agent) {
+                agent.launching = true;
+                agent._launchTime = Date.now();
+                renderAgentsList();
+
+                // Also send launch command
+                try {
+                    const resp = await fetch(`${API_BASE}/agents/start`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ agent_id: agentId, agent_type: agentType })
+                    });
+                    const data = await resp.json();
+                    if (data.success) {
+                        showToast(`${agentId} 启动中...`, 'success');
+
+                        // Poll for status change (check every 3s for up to 60s)
+                        let checkCount = 0;
+                        const checkInterval = setInterval(async () => {
+                            checkCount++;
+                            // Check if we received a message from this agent (means it's connected)
+                            await loadAgents();
+                            const updated = agents.find(a => a.id === agentId);
+                            if (updated && updated.status === 'online') {
+                                clearInterval(checkInterval);
+                                showToast(`${agentId} 已连接!`, 'success');
+                            } else if (checkCount > 20) {
+                                clearInterval(checkInterval);
+                                agent.launching = false;
+                                renderAgentsList();
+                            }
+                        }, 3000);
+                    } else {
+                        showToast(data.message || '启动失败', 'error');
+                        agent.launching = false;
+                        renderAgentsList();
+                    }
+                } catch (e) {
+                    showToast('启动失败: ' + e.message, 'error');
+                    agent.launching = false;
+                    renderAgentsList();
+                }
+            }
+        }
+
+        async function startAllAgents() {
+            const offlineAgents = agents.filter(a => a.status !== 'online');
+            if (offlineAgents.length === 0) {
+                showToast('所有 Agent 都已在线', 'info');
+                return;
+            }
+            showToast(`正在启动 ${offlineAgents.length} 个 Agent...`, 'info');
+            let started = 0;
+            for (const agent of offlineAgents) {
+                try {
+                    await fetch(`${API_BASE}/agents/start`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ agent_id: agent.id, agent_type: agent.type })
+                    });
+                    started++;
+                } catch (e) {}
+            }
+            showToast(`已发送 ${started} 个启动命令`, 'success');
+            setTimeout(loadAgents, 3000);
+        }
+
+        async function stopAllAgents() {
+            showToast('正在停止所有 Agent...', 'info');
+            try {
+                await fetch(`${API_BASE}/agents/stop-all`, { method: 'POST' });
+                showToast('停止命令已发送', 'success');
+                setTimeout(loadAgents, 2000);
+            } catch (e) {
+                showToast('停止失败', 'error');
+            }
+        }
+
+        function selectAgent(agentId) {
+            const agent = agents.find(a => a.id === agentId);
+            if (!agent) return;
+
+            currentAgent = agent;
+
+            // Update UI
+            document.getElementById('chat-empty').style.display = 'none';
+            const chatContent = document.getElementById('chat-content');
+            chatContent.style.display = 'flex';
+
+            document.getElementById('chat-avatar').textContent = (agent.name || '?').charAt(0).toUpperCase();
+            document.getElementById('chat-name').textContent = agent.name || agent.id;
+            const statusEl = document.getElementById('chat-status');
+            statusEl.textContent = agent.status === 'online' ? '● 在线' : '○ 离线';
+            statusEl.className = 'chat-header-status' + (agent.status === 'online' ? ' online' : '');
+
+            // Load conversation
+            loadConversation(agentId);
+
+            // Highlight in list
+            renderAgentsList();
+
+            // Focus input
+            document.getElementById('chat-input').focus();
+        }
+
+        async function loadConversation(agentId) {
+            try {
+                const resp = await fetch(`${API_BASE}/messages/conversation/console/${agentId}`);
+                const data = await resp.json();
+                const msgs = data.messages || [];
+
+                conversations[agentId] = msgs.map(m => ({
+                    from: m.from === 'console' ? 'sent' : 'received',
+                    text: m.payload?.text || '',
+                    timestamp: m.timestamp,
+                    sent: m.from === 'console'
+                })).reverse();
+
+                renderMessages();
+            } catch (e) {
+                console.error('Load conversation error:', e);
+            }
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('chat-messages');
+            const msgs = conversations[currentAgent?.id] || [];
+
+            container.innerHTML = msgs.map(msg => {
+                const time = new Date(msg.timestamp || Date.now()).toLocaleTimeString('zh-CN', {
+                    hour: '2-digit', minute: '2-digit'
+                });
+                const typeClass = msg.sent ? 'sent' : 'received';
+                return `
+                    <div class="message ${typeClass}">
+                        <div>${escapeHtml(msg.text)}</div>
+                        <div class="message-time">${time}</div>
+                    </div>
+                `;
+            }).join('');
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text || !currentAgent || !wsConnected) {
+                if (!wsConnected) showToast('WebSocket未连接', 'error');
+                return;
+            }
+
+            const timestamp = new Date().toISOString();
+
+            // Add to local conversation
+            if (!conversations[currentAgent.id]) conversations[currentAgent.id] = [];
+            conversations[currentAgent.id].push({
+                from: 'sent',
+                text: text,
+                timestamp: timestamp,
+                sent: true
+            });
+
+            renderMessages();
+            input.value = '';
+
+            // Send via WebSocket to agent
+            ws.send(JSON.stringify({
+                type: 'message',
+                from: 'console',
+                to: currentAgent.id,
+                payload: { text: text },
+                timestamp: timestamp
+            }));
+
+            // For OpenClaw agents, also try to forward via API
+            if (currentAgent.type === 'openclaw') {
+                forwardToOpenClaw(currentAgent.id, text);
+            }
+        }
+
+        async function forwardToOpenClaw(agentId, text) {
+            try {
+                await fetch(`${API_BASE}/agents/${agentId}/forward`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+            } catch (e) {
+                console.error('Forward to OpenClaw failed:', e);
+            }
+        }
+
+        function clearChatHistory() {
+            if (!currentAgent) return;
+            conversations[currentAgent.id] = [];
+            renderMessages();
+        }
+
+        function showAddAgentModal() {
+            document.getElementById('add-modal').classList.add('show');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+
+        async function addAgent() {
+            const id = document.getElementById('agent-id').value.trim();
+            const name = document.getElementById('agent-name').value.trim();
+            const type = document.getElementById('agent-type').value;
+
+            if (!id || !name) {
+                showToast('请填写 ID 和名称', 'error');
+                return;
+            }
+
+            try {
+                const resp = await fetch(`${API_BASE}/agents/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, name, type })
+                });
+                const data = await resp.json();
+                if (data.id) {
+                    showToast('Agent 已添加', 'success');
+                    closeModal('add-modal');
+                    document.getElementById('agent-id').value = '';
+                    document.getElementById('agent-name').value = '';
+                    loadAgents();
+                }
+            } catch (e) {
+                showToast('添加失败', 'error');
+            }
+        }
+
+        async function confirmAllAgents() {
+            try {
+                await fetch(`${API_BASE}/agents/confirm-all`, { method: 'POST' });
+                showToast('已确认所有 Agent', 'success');
+                loadAgents();
+            } catch (e) {
+                showToast('操作失败', 'error');
+            }
+        }
+
+        function showToast(msg, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = `toast show ${type}`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
